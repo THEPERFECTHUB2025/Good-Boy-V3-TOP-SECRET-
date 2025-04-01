@@ -1,0 +1,138 @@
+-- AutoReloadModule (ModuleScript)
+local AutoReloadModule = {}
+
+-- Services
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Variables du module
+local LocalPlayer = Players.LocalPlayer
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local isReloading = false
+local connection -- Pour stocker la connexion à RunService.RenderStepped
+local characterAddedConnection -- Pour stocker la connexion à CharacterAdded
+local isRunning = false -- Pour suivre si le module est actif
+
+-- Liste des outils à surveiller (peut être configurée)
+local config = {
+    tools = {
+        "[DoubleBarrel]",
+        "[Revolver]",
+        "[SMG]",
+        "[Shotgun]",
+        "[Silencer]",
+        "[TacticalShotgun]"
+    },
+    reloadDelay = 0.5 -- Délai après un rechargement
+}
+
+-- Fonction pour vérifier et recharger un outil
+local function checkAndReload()
+    -- Vérification du personnage
+    if not character or not character:FindFirstChild("Humanoid") then
+        print("Personnage ou Humanoid non trouvé dans AutoReloadModule !")
+        return
+    end
+
+    -- Vérification de MainEvent
+    local mainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
+    if not mainEvent then
+        print("MainEvent not found in ReplicatedStorage!")
+        return
+    end
+
+    -- Vérification si on est déjà en train de recharger
+    if isReloading then
+        return
+    end
+
+    -- Parcourir tous les outils configurés
+    for _, toolName in pairs(config.tools) do
+        -- Recherche de l'outil (soit dans le Character, soit dans le Backpack)
+        local tool
+        if character:FindFirstChild(toolName) then
+            tool = character:FindFirstChild(toolName)
+        elseif LocalPlayer.Backpack and LocalPlayer.Backpack:FindFirstChild(toolName) then
+            tool = LocalPlayer.Backpack:FindFirstChild(toolName)
+        end
+
+        if tool then
+            -- Vérification de la valeur Ammo
+            local ammo = tool:FindFirstChild("Script") and tool.Script:FindFirstChild("Ammo")
+            if not ammo then
+                print("Ammo not found in " .. toolName .. ".Script!")
+                continue
+            end
+
+            -- Vérification des munitions
+            if ammo.Value <= 0 then
+                print("Ammo is 0, attempting to reload " .. toolName .. "...")
+                isReloading = true
+                mainEvent:FireServer("Reload", tool)
+                task.wait(config.reloadDelay) -- Utilise le délai configuré
+                isReloading = false
+            end
+        end
+    end
+end
+
+-- Fonction pour démarrer l'auto-reload
+function AutoReloadModule:Start()
+    if isRunning then
+        print("Auto-reload is already running!")
+        return
+    end
+
+    -- Connecter la boucle principale
+    connection = RunService.RenderStepped:Connect(checkAndReload)
+
+    -- Gérer le respawn
+    characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newChar)
+        character = newChar
+        print("Character respawned, updated reference.")
+    end)
+
+    isRunning = true
+    print("Auto-reload module started successfully!")
+end
+
+-- Fonction pour arrêter l'auto-reload
+function AutoReloadModule:Stop()
+    if not isRunning then
+        print("Auto-reload is not running!")
+        return
+    end
+
+    -- Déconnecter les événements
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+
+    if characterAddedConnection then
+        characterAddedConnection:Disconnect()
+        characterAddedConnection = nil
+    end
+
+    isRunning = false
+    print("Auto-reload module stopped.")
+end
+
+-- Fonction pour configurer les paramètres (optionnel)
+function AutoReloadModule:Configure(settings)
+    if settings.tools then
+        config.tools = settings.tools
+    end
+    if settings.reloadDelay then
+        config.reloadDelay = settings.reloadDelay
+    end
+    print("Auto-reload configuration updated: Tools = " .. table.concat(config.tools, ", ") .. ", Reload Delay = " .. config.reloadDelay)
+end
+
+-- Fonction pour vérifier si le module est en cours d'exécution
+function AutoReloadModule:IsRunning()
+    return isRunning
+end
+
+return AutoReloadModule
