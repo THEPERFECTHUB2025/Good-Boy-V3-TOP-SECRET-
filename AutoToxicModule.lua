@@ -44,7 +44,7 @@ local function sendRandomMessage()
 end
 
 -- Fonction pour surveiller les HP de la cible
-local function monitorTargetHealth(targetPlayer)
+local function monitorTargetHealth(targetPlayer, getPlr, getEnabled, getForceHit)
     if not targetPlayer or not targetPlayer.Character then
         print("Auto Toxic: Cible invalide pour surveillance")
         return
@@ -72,8 +72,13 @@ local function monitorTargetHealth(targetPlayer)
             return
         end
 
+        -- Récupérer les valeurs actuelles de Plr, enabled et ForceHit
+        local Plr = getPlr()
+        local enabled = getEnabled()
+        local ForceHit = getForceHit()
+
         -- Vérifier si le ForceHit et l'aimbot sont activés
-        if not enabled or not getgenv().Rake.Settings.Misc.ForceHit then
+        if not enabled or not ForceHit then
             print("Auto Toxic: ForceHit ou aimbot désactivé, pas de message envoyé pour " .. targetPlayer.Name)
             return
         end
@@ -133,9 +138,12 @@ local function monitorTargetHealth(targetPlayer)
         monitoredTargets[targetPlayer] = nil
         messageSentForLowHP[targetPlayer] = nil
         -- Reprendre la surveillance si la cible est toujours sélectionnée
-        if isEnabled and targetPlayer == Plr and enabled and getgenv().Rake.Settings.Misc.ForceHit then
+        local Plr = getPlr()
+        local enabled = getEnabled()
+        local ForceHit = getForceHit()
+        if isEnabled and targetPlayer == Plr and enabled and ForceHit then
             print("Auto Toxic: Reprise de la surveillance pour " .. targetPlayer.Name .. " après respawn/reset")
-            monitorTargetHealth(targetPlayer)
+            monitorTargetHealth(targetPlayer, getPlr, getEnabled, getForceHit)
         end
     end)
 
@@ -145,10 +153,15 @@ local function monitorTargetHealth(targetPlayer)
 end
 
 -- Fonction pour activer le module
-function AutoToxicModule:Enable()
+function AutoToxicModule:Enable(getPlr, getEnabled, getForceHit)
     if isEnabled then
         print("Auto Toxic: Déjà activé")
         return
+    end
+
+    -- Vérifier que les fonctions de récupération des variables sont fournies
+    if not getPlr or not getEnabled or not getForceHit then
+        error("AutoToxicModule:Enable requires getPlr, getEnabled, and getForceHit functions as arguments")
     end
 
     isEnabled = true
@@ -162,17 +175,22 @@ function AutoToxicModule:Enable()
             return
         end
 
+        -- Récupérer les valeurs actuelles de Plr, enabled et ForceHit
+        local Plr = getPlr()
+        local enabled = getEnabled()
+        local ForceHit = getForceHit()
+
         -- Vérifier si une cible est sélectionnée et si l'aimbot et ForceHit sont activés
-        if Plr and enabled and getgenv().Rake.Settings.Misc.ForceHit then
+        if Plr and enabled and ForceHit then
             -- Vérifier si nous surveillons déjà cette cible
             if not monitoredTargets[Plr] then
                 print("Auto Toxic: Début de la surveillance des HP pour " .. Plr.Name)
-                monitorTargetHealth(Plr)
+                monitorTargetHealth(Plr, getPlr, getEnabled, getForceHit)
             end
         else
             -- Si les conditions ne sont plus remplies, nettoyer les cibles surveillées
             for target, _ in pairs(monitoredTargets) do
-                if Plr ~= target or not enabled or not getgenv().Rake.Settings.Misc.ForceHit then
+                if Plr ~= target or not enabled or not ForceHit then
                     print("Auto Toxic: Arrêt de la surveillance pour " .. target.Name .. " (conditions non remplies)")
                     monitoredTargets[target] = nil
                     messageSentForLowHP[target] = nil
