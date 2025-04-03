@@ -82,12 +82,14 @@ function AutoToxic:MonitorTargetHealth(targetPlayer)
         end
 
         -- Vérifier si le ForceHit et l'aimbot sont activés
+        print("Auto Toxic: Vérification des dépendances - enabled:", enabled, "ForceHit:", getgenv().Rake.Settings.Misc.ForceHit)
         if not enabled or not getgenv().Rake.Settings.Misc.ForceHit then
             print("Auto Toxic: ForceHit ou aimbot désactivé, pas de message envoyé pour " .. targetPlayer.Name)
             return
         end
 
         -- Vérifier si la cible est bien celle visée par l'aimbot
+        print("Auto Toxic: Vérification de la cible - Plr:", Plr and Plr.Name or "nil", "targetPlayer:", targetPlayer.Name)
         if targetPlayer ~= Plr then
             print("Auto Toxic: Cible " .. targetPlayer.Name .. " n'est pas la cible actuelle de l'aimbot (" .. (Plr and Plr.Name or "aucune") .. ")")
             return
@@ -112,6 +114,7 @@ function AutoToxic:MonitorTargetHealth(targetPlayer)
         end
 
         local currentHealth = humanoid.Health
+        print("Auto Toxic: HP de " .. targetPlayer.Name .. ": " .. currentHealth)
 
         -- Vérifier si les HP sont entre 0.5 et 1
         if currentHealth >= 0.5 and currentHealth <= 1 then
@@ -168,6 +171,7 @@ function AutoToxic:Enable()
         end
 
         -- Vérifier si une cible est sélectionnée et si l'aimbot et ForceHit sont activés
+        print("Auto Toxic: Vérification des dépendances dans Enable - Plr:", Plr and Plr.Name or "nil", "enabled:", enabled, "ForceHit:", getgenv().Rake.Settings.Misc.ForceHit)
         if Plr and enabled and getgenv().Rake.Settings.Misc.ForceHit then
             -- Vérifier si nous surveillons déjà cette cible
             if not self.monitoredTargets[Plr] then
