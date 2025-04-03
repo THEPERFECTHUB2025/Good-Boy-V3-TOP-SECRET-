@@ -73,14 +73,18 @@ local function monitorTargetHealth(targetPlayer)
         end
 
         -- Vérifier si le ForceHit et l'aimbot sont activés
-        if not getgenv().Rake.Aimbot.Enabled or not getgenv().Rake.Settings.Misc.ForceHit then
+        if not enabled or not getgenv().Rake.Settings.Misc.ForceHit then
             print("Auto Toxic: ForceHit ou aimbot désactivé, pas de message envoyé pour " .. targetPlayer.Name)
             return
         end
 
         -- Vérifier si la cible est bien celle visée par l'aimbot
-        if targetPlayer ~= getgenv().Rake.Aimbot.Plr then
-            print("Auto Toxic: Cible " .. targetPlayer.Name .. " n'est pas la cible actuelle de l'aimbot (" .. (getgenv().Rake.Aimbot.Plr and getgenv().Rake.Aimbot.Plr.Name or "aucune") .. ")")
+        if not Plr then
+            print("Auto Toxic: Aucune cible (Plr) définie")
+            return
+        end
+        if targetPlayer ~= Plr then
+            print("Auto Toxic: Cible " .. targetPlayer.Name .. " n'est pas la cible actuelle de l'aimbot (" .. Plr.Name .. ")")
             return
         end
 
@@ -129,7 +133,7 @@ local function monitorTargetHealth(targetPlayer)
         monitoredTargets[targetPlayer] = nil
         messageSentForLowHP[targetPlayer] = nil
         -- Reprendre la surveillance si la cible est toujours sélectionnée
-        if isEnabled and targetPlayer == getgenv().Rake.Aimbot.Plr and getgenv().Rake.Aimbot.Enabled and getgenv().Rake.Settings.Misc.ForceHit then
+        if isEnabled and targetPlayer == Plr and enabled and getgenv().Rake.Settings.Misc.ForceHit then
             print("Auto Toxic: Reprise de la surveillance pour " .. targetPlayer.Name .. " après respawn/reset")
             monitorTargetHealth(targetPlayer)
         end
@@ -159,8 +163,6 @@ function AutoToxicModule:Enable()
         end
 
         -- Vérifier si une cible est sélectionnée et si l'aimbot et ForceHit sont activés
-        local Plr = getgenv().Rake.Aimbot.Plr
-        local enabled = getgenv().Rake.Aimbot.Enabled
         if Plr and enabled and getgenv().Rake.Settings.Misc.ForceHit then
             -- Vérifier si nous surveillons déjà cette cible
             if not monitoredTargets[Plr] then
