@@ -93,7 +93,7 @@ local function createTracerSilentAimTarget(plr)
     local tracer = Instance.new("Beam")
     tracer.Parent = plr.Character
     tracer.FaceCamera = true
-    tracer.Color = ColorSequence.new(Color3.new(1, 1, 1))
+    tracer.Color = ColorSequence.new(Color3.new(255, 0, 0))
     tracer.Width0 = 0.1
     tracer.Width1 = 0.1
     local attachment0 = Instance.new("Attachment", LocalPlayer.Character.HumanoidRootPart)
