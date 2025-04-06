@@ -72,9 +72,9 @@ local function highlightSilentAimTarget(plr)
         cleanHighlightsAndTracers(plr)
         local highlight = Instance.new("Highlight")
         highlight.Parent = plr.Character
-        highlight.FillColor = Color3.new(1, 1, 1)
+        highlight.FillColor = Color3.new(255, 0, 0)
         highlight.OutlineColor = Color3.new(1, 1, 1)
-        highlight.FillTransparency = 0.6
+        highlight.FillTransparency = 0.5
         highlight.OutlineTransparency = 0
     end
 end
@@ -160,7 +160,7 @@ end
 
 function SilentAimModule:ToggleTarget()
     if not SilentAimEnabled then
-        print("Silent Aim: Turn on the silent aim on a target 🥀")
+        print("Silent Aim: Turn on the silent aim on an target 🥀")
         return
     end
 
