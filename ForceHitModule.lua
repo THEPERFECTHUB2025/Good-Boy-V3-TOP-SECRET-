@@ -31,20 +31,6 @@ Highlight.FillTransparency = 0.5
 Highlight.OutlineTransparency = 0
 Highlight.Enabled = false
 
--- Fonction pour vérifier si la cible est visible (pas derrière un mur)
-local function IsTargetVisible(targetPart)
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return false end
-    local origin = LocalPlayer.Character.HumanoidRootPart.Position
-    local direction = (targetPart.Position - origin).Unit * ForceHitModule.MaxDistance
-    local raycastParams = RaycastParams.new()
-    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
-    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    local raycastResult = workspace:Raycast(origin, direction, raycastParams)
-    if raycastResult then
-        return raycastResult.Instance == targetPart
-    end
-    return false
-end
 
 -- Fonction pour vérifier la distance
 local function IsWithinMaxDistance(targetPart)
