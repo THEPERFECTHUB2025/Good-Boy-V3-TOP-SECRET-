@@ -1,5 +1,0 @@
-{
-    "kicklist": [
-        "qztenc"
-    ]
-}
